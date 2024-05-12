@@ -1,37 +1,57 @@
-import java.util.Random;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
 
 /**
  * Main
  */
-public class Main {
+public class Main {  
+    public static int[][] readMatrix(String fileName){
+        int[][] matrix = null;
+        try{
+            File file = new File(fileName);
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+            
+            String line = bufferedReader.readLine();
+            String[] size = line.split(" ");
+            int row = Integer.parseInt(size[0]);
+            int col = Integer.parseInt(size[1]);
+            
+            matrix = new int[row][col];
 
-
-    public static int[][] creatMatirx(int size){
-        Random random = new Random();
-        int matrix[][] = new int[size][size];
-        for(int i = 0; i < size; i++){
-            for(int j = 0; j < size; j++){
-                matrix[i][j] = random.nextInt(1_000);
+            for(int i = 0; i < row; i++){
+                line = bufferedReader.readLine();
+                String[] elemant = line.split(" ");
+                for(int j = 0; j < col; j++){
+                    matrix[i][j] = Integer.parseInt(elemant[j]); 
+                }
             }
-        }
+            bufferedReader.close();
+        }catch(IOException e){}        
         return matrix;
     }
-
-    public static void main(String[] args) throws InterruptedException {
-        System.out.println("sueda");
-        
-        int size = 0;
-        try{
-            size = Integer.parseInt(args[0]);
-        }catch(Exception e){
-            System.out.println("geçerli bir sayi gir"+e);
-        }        
-        
-        for(int i = 0; i < size; i++){
-            MultiThread multiThread = new MultiThread(i, size);
-            multiThread.start();
-            multiThread.join();
+    public static void printer(int[][] matrix){
+        for(int i = 0; i < matrix.length; i++){
+            for(int j = 0; j < matrix[0].length; j++){
+                System.out.print(matrix[i][j]+ " ");
+            }
+            System.out.println();
         }
-    }   
-}
+    }
 
+
+    public static void main(String[] args) {
+        String fileName = args[0];
+        String fileName1 = args[1];
+
+   
+        
+        int[][] matrix1 = readMatrix(fileName);
+        int[][] matrix2 = readMatrix(fileName1); 
+        printer(matrix1);
+        System.out.println("****");
+       printer(matrix2);
+    }
+}
