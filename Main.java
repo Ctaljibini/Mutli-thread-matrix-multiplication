@@ -1,13 +1,27 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.util.Random;
 
 
 /**
  * Main
  */
 public class Main {  
+    static String[] fileName = new String[3]; // A, B and output
+    static int[][] matixA;
+    static int[][] matixB;
+    static int[][] matixC; // output
+    static int rowA, colA, rowB, colB;
+
+    static Random random = new Random();
+    
+
+    // txt'ten matrix'i ve boyutları
     public static int[][] readMatrix(String fileName){
         int[][] matrix = null;
         try{
@@ -40,18 +54,53 @@ public class Main {
             System.out.println();
         }
     }
+    public static void generateMatrix(int row, int col, String file){
+        try{
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            writer.write(row + " " + col+ "\n");
+            for(int i = 0; i < row; i++){
+                for(int j = 0; j < col; j++){
+                    writer.write(random.nextInt(10) + " ");
+                }
+                writer.write("\n");
+            }
+            writer.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
 
 
-    public static void main(String[] args) {
-        String fileName = args[0];
-        String fileName1 = args[1];
-
-   
+    public static void main(String[] args) {   
         
-        int[][] matrix1 = readMatrix(fileName);
-        int[][] matrix2 = readMatrix(fileName1); 
-        printer(matrix1);
-        System.out.println("****");
-       printer(matrix2);
+        
+        if(args.length == 2){
+            fileName[0] = args[0];
+            fileName[1] = args[1];
+        }else if(args.length == 4){
+            try{
+                rowA = Integer.parseInt(args[0]);
+                colA = Integer.parseInt(args[1]);
+                rowB = Integer.parseInt(args[2]);
+                colB = Integer.parseInt(args[3]);
+
+            }catch(NumberFormatException e){}
+        }
+        else{
+            rowA = Integer.parseInt(args[0]);
+            colA = Integer.parseInt(args[1]);
+            generateMatrix(rowA, colB, args[2]);
+        }
+        System.out.println(rowA);
+        System.out.println(rowB);
+        System.out.println(colA);
+        System.out.println(colB);
+        
+        matixA = readMatrix(fileName[0]);
+        matixB = readMatrix(fileName[1]); 
+        printer(matixA);
+        System.out.println("***");
+        printer(matixB);
+
     }
 }
