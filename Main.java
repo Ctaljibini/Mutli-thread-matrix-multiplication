@@ -1,26 +1,20 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Random;
-
+import java.io.*;
+import java.util.*;
 
 /**
  * Main
  */
 public class Main {  
     static String[] fileName = new String[3]; // A, B and output
-    static int[][] matixA;
-    static int[][] matixB;
-    static int[][] matixC; // output
     static int rowA, colA, rowB, colB;
 
+    static int[][] matixA = new int[rowA][colA];
+    static int[][] matixB = new int[rowB][colB];
+    static int[][] matixC = new int[rowA][colB]; // output
+    static int numberOfThread = rowA;
+    
     static Random random = new Random();
     
-
     // txt'ten matrix'i ve boyutları
     public static int[][] readMatrix(String fileName){
         int[][] matrix = null;
@@ -70,27 +64,127 @@ public class Main {
         }
     }
 
+    static void checkDimension(){
+        if(colA != rowB){
+            System.out.println("Matrix Multiplication is not possible due to dimension conflicts");
+            System.exit(1);
+        }
+    }
 
-    public static void main(String[] args) {   
+    static void writeToFile(String extension) throws FileNotFoundException{
+        String[] extend = {"outputPerRow.txt", "outputPerMatrix.txt"};
+        String outputFileName = "";
+
+        if(extension.equals("row")){
+            outputFileName = extend[0];
+        }else if(extension.equals("matrix")){
+            outputFileName = extend[1];
+        }else{
+            System.out.println("Invalid extension"); // dosya adı yanlış girildi.
+            return;
+        }  
+        try(PrintWriter writer = new PrintWriter(outputFileName)){
+            writer.println(colA + " " + rowB);
+            for(int i = 0; i < rowA; i++){
+                for(int j = 0; j < colB; j++){
+                    writer.print(matixC[i][j] + " ");
+                }
+                writer.println();
+            }
+        }
+    }
+    static void multiplyRow(int row) {
+        for (int j = 0; j < colB; j++) {
+            for (int k = 0; k < rowA; k++) {
+                matixC[row][j] += matixA[row][k] * matixB[k][j];
+            }
+        }
+    }
+    
+    static void multiThreadPerRow() throws InterruptedException, IOException{
+        Thread[] threads = new Thread[numberOfThread];
+        for(int i = 0; i < numberOfThread; i++){
+            final int row = i;
+            threads[i] = new Thread(() -> multiplyRow(row));
+            threads[i].start();
+        }
+        // Tüm threadlerin bitmesini bekleyelim
+        try{
+            for(Thread thread : threads){
+                thread.join();
+            }
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+        writeToFile("row");
+        printer(matixC);
+    }
+
+    static void matMatrix() throws IOException{
+        for(int i = 0; i < rowA; i++){
+            for(int j = 0; j < colB; j++){
+                for(int k = 0; k < colA; k++){
+                    matixC[i][j] += matixA[i][k] * matixB[k][j];
+                }
+            }
+        }
+        writeToFile("matrix");
+    }
+
+    public static void main(String[] args) throws InterruptedException, IOException {  
+        String file1 = "matrixA.txt"; 
+        String file2 = "matrixB.txt"; 
+
+        long startTime;
+        long finshTime;
         
         
         if(args.length == 2){
             fileName[0] = args[0];
             fileName[1] = args[1];
+            
         }else if(args.length == 4){
             try{
                 rowA = Integer.parseInt(args[0]);
                 colA = Integer.parseInt(args[1]);
                 rowB = Integer.parseInt(args[2]);
-                colB = Integer.parseInt(args[3]);
-
+                colB = Integer.parseInt(args[3]);                
             }catch(NumberFormatException e){}
+            checkDimension();
+            startTime = System.currentTimeMillis();
+            generateMatrix(rowA, colA, file1);
+            generateMatrix(rowB, colB, file2);
+            finshTime = System.currentTimeMillis();
+            System.out.println("Time take for generate matrix is: "+(finshTime - startTime));
+           // matixC = new int[rowA][colB];
+            startTime = System.currentTimeMillis();
+            matMatrix();
+            finshTime = System.currentTimeMillis();
+            System.out.println("Time take for multi thread is: "+ (finshTime - startTime));
+            System.out.println(startTime);
+            System.out.println(finshTime);
+            //multiThreadPerRow();
+           // printer(matixC);
+        }else if(args.length == 0){
+            /*
+            */
+            rowA = 2;
+            colA = 2;
+            rowB = 2;
+            colB = 2;
+
+            generateMatrix(rowA, colA, file1);
+            generateMatrix(rowB, colB, file2);
+            matixC = new int[rowA][colB];
+            matMatrix();
         }
-        else{
-            rowA = Integer.parseInt(args[0]);
-            colA = Integer.parseInt(args[1]);
-            generateMatrix(rowA, colB, args[2]);
-        }
+        /*
+        writeToFile("row");
+        writeToFile("matrix");
+        rowA = Integer.parseInt(args[0]);
+        colA = Integer.parseInt(args[1]);
+        generateMatrix(rowA, colA, args[2]);
+        * 
         System.out.println(rowA);
         System.out.println(rowB);
         System.out.println(colA);
@@ -101,6 +195,7 @@ public class Main {
         printer(matixA);
         System.out.println("***");
         printer(matixB);
-
+        */
+        
     }
 }
