@@ -8,10 +8,10 @@ public class Main {
     static String[] fileName = new String[3]; // A, B and output
     static int rowA, colA, rowB, colB;
 
-    static int[][] matixA = new int[rowA][colA];
-    static int[][] matixB = new int[rowB][colB];
-    static int[][] matixC = new int[rowA][colB]; // output matrix.
-    static int numberOfThread;
+    static int[][] matrixA = new int[rowA][colA];
+    static int[][] matrixB = new int[rowB][colB];
+    static int[][] matrixC = new int[rowA][colB]; // output matrix.
+    static int numberOfThread = rowA;
     
     static Random random = new Random();
     
@@ -28,7 +28,6 @@ public class Main {
             int col = Integer.parseInt(size[1]);
             
             matrix = new int[row][col];
-
             for (int i = 0; i < row; i++) {
                 line = bufferedReader.readLine();
                 String[] elemant = line.split(" ");
@@ -76,7 +75,7 @@ public class Main {
     }
 
     static void writeToFile(String extension) throws FileNotFoundException {
-        String[] extend = {"outputPerRow.txt", "outputPerMatrix.txt"};
+        String[] extend = {"outputPerRows.txt", "outputPerMatrix.txt"}; // two cases. case one is singel thread, if the second situation is uo to namber of rows.
         String outputFileName = "";
 
         if (extension.equals("row")) {
@@ -91,27 +90,30 @@ public class Main {
             writer.println(rowA + " " + colB);
             for (int i = 0; i < rowA; i++) {
                 for (int j = 0; j < colB; j++) {
-                    writer.print(matixC[i][j] + " ");
+                    writer.print(matrixC[i][j] + " ");
                 }
                 writer.println();
             }
         }
     }
 
-    static void multiplyRow(int row) {
+    static void multiplyRow(int row, int[][] matrixA, int[][] matrixB) {
         for (int j = 0; j < colB; j++) {
             for (int k = 0; k < colA; k++) { // Corrected to colA
-                matixC[row][j] += matixA[row][k] * matixB[k][j];
+                matrixC[row][j] += matrixA[row][k] * matrixB[k][j];
             }
         }
     }
-    static void multiThreadPerRow() throws InterruptedException, IOException {
+    static void multiThreadPerRow(int[][] matrixA, int[][] matrixB) throws InterruptedException, IOException {
       long[] startTime = new long[numberOfThread];
       long[] finishTime = new long[numberOfThread];
       Thread[] threads = new Thread[numberOfThread];
+      
+      matrixC = new int[rowA][colB];
+
       for(int i = 0; i < numberOfThread; i++) {
         final int row = i;
-        threads[i] = new Thread(() -> multiplyRow(row));
+        threads[i] = new Thread(() -> multiplyRow(row, matrixA, matrixB));
         startTime[i] = System.currentTimeMillis();
         threads[i].start();
         }
@@ -122,44 +124,49 @@ public class Main {
           System.out.println("Thread "+ i +" time: "+(finishTime[i] - startTime[i]));
           ++i;
         }
-        //System.out.println("thread "+i+" time: "+ (finishTime - startTime));
         writeToFile("row");
-        //printer(matixC);
     }
 
-    static void matMatrix() throws IOException {
+    static void matMatrix(int[][] matrixA, int[][] matrixB) throws IOException {
+        long startTime = System.nanoTime(); 
         for (int i = 0; i < rowA; i++) {
             for (int j = 0; j < colB; j++) {
-                for (int k = 0; k < colA; k++) {
-                    matixC[i][j] += matixA[i][k] * matixB[k][j];
+                for (int k = 0; k < rowB; k++) {
+                    matrixC[i][j] += matrixA[i][k] * matrixB[k][j];
                 }
             }
         }
+        long finshTime = System.nanoTime();
+        System.out.println("Singel thread time is: "+(finshTime - startTime));
         writeToFile("matrix");
-        printer(matixC);
     }
+
+
+    
 
     public static void main(String[] args) throws InterruptedException, IOException {
         String file1 = "matrixA.txt";
         String file2 = "matrixB.txt";
 
-        long startTime;
-        long finshTime;
 
         if (args.length == 2) {
             fileName[0] = args[0];
             fileName[1] = args[1];
-            matixA = readMatrix(fileName[0]);
-            matixB = readMatrix(fileName[1]);
-            rowA = matixA.length;
-            colA = matixA[0].length;
-            rowB = matixB.length;
-            colB = matixB[0].length;
-            checkDimension();
-            matixC = new int[rowA][colB];
+            matrixA = readMatrix(fileName[0]);
+            matrixB = readMatrix(fileName[1]);
+            rowA = matrixA.length;
+            colA = matrixA[0].length;
+            rowB = matrixB.length;
+            colB = matrixB[0].length;
             numberOfThread = rowA;
-            multiThreadPerRow();
+            checkDimension();
+            matrixC = new int[rowA][colB];
+            System.out.println("Single-thead: ");
+            matMatrix(matrixA, matrixB);
+            System.out.println("Multi-threade: ");
+            multiThreadPerRow(matrixA, matrixB);
         } else if (args.length == 4) {
+            // argumaent check is ture input.
             try {
                 rowA = Integer.parseInt(args[0]);
                 colA = Integer.parseInt(args[1]);
@@ -168,35 +175,40 @@ public class Main {
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
+            numberOfThread = rowA;
             checkDimension();
-            startTime = System.currentTimeMillis();
             generateMatrix(rowA, colA, file1);
             generateMatrix(rowB, colB, file2);
-            finshTime = System.currentTimeMillis();
-            System.out.println("Time taken to generate matrices: " + (finshTime - startTime) + " ms");
+            matrixA = readMatrix(file1);
+            matrixB = readMatrix(file2);
+            matrixC = new int[rowA][colB];
+            System.out.println("Single-thead: ");
+            matMatrix(matrixA, matrixB);
+            System.out.println("Multi-threade: ");
+            multiThreadPerRow(matrixA, matrixB);
 
-            matixA = readMatrix(file1);
-            matixB = readMatrix(file2);
-            matixC = new int[rowA][colB];
-            numberOfThread = rowA;
-
-            startTime = System.currentTimeMillis();
-            multiThreadPerRow();
-            finshTime = System.currentTimeMillis();
-            System.out.println("Time taken for multi-threaded row multiplication: " + (finshTime - startTime) + " ms");
         } else if (args.length == 0) {
             // Default values
-            rowA = 3;
-            colA = 3;
-            rowB = 3;
-            colB = 3;
-
-            matixA = new int[][] {{1, 4,3}, {2,5, 4}, {4, 3, 2}};
-            matixB = new int[][] {{4, 5, 3}, {5, 4, 3}, {1, 5, 2}};
-            matixC = new int[rowA][colB];
+            rowA = 1;
+            colA = 1;
+            rowB = 1;
+            colB = 1000;
+            
             numberOfThread = rowA;
+            matrixC = new int[rowA][colB];
 
-            multiThreadPerRow();
+            generateMatrix(rowA, colA, file1);
+            matrixA = readMatrix(file1);
+            
+            generateMatrix(rowB, colB, file2);
+            matrixB = readMatrix(file2);
+
+            
+            checkDimension();
+            System.out.println("Single-thead: ");
+            matMatrix(matrixA, matrixB);
+            System.out.println("Multi-threade: ");
+            multiThreadPerRow(matrixA, matrixB);            
         }
     }
 }
