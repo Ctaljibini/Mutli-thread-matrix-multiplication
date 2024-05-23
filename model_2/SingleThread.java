@@ -10,8 +10,10 @@ public class SingleThread {
         int rowA = matrixA.length;
         int colB = matrixB[0].length;
         int rowB = matrixB.length;
+        long startTime, endTime;
 
         int[][] matrixC = new int[rowA][colB];
+        startTime = System.currentTimeMillis();
         for(int i = 0; i < rowA; i++){
             for(int j = 0; j < colB; j++){
                 for(int k = 0; k < rowB; k++){
@@ -19,15 +21,8 @@ public class SingleThread {
                 }
             }
         }
+        endTime = System.currentTimeMillis();
+        System.out.println("Thread for single-thread " + (endTime - startTime) + " ms.");
         return matrixC;
-    }
-
-    public void printer(int[][] matrix) {
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[0].length; j++) {
-                System.out.print(matrix[i][j] + " ");
-            }
-            System.out.println();
-        }
     }
 }
