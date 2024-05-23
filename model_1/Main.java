@@ -189,10 +189,10 @@ public class Main {
 
         } else if (args.length == 0) {
             // Default values
-            rowA = 1;
+            rowA = 10;
             colA = 1;
             rowB = 1;
-            colB = 1000;
+            colB = 10;
             
             numberOfThread = rowA;
             matrixC = new int[rowA][colB];
@@ -202,7 +202,6 @@ public class Main {
             
             generateMatrix(rowB, colB, file2);
             matrixB = readMatrix(file2);
-
             
             checkDimension();
             System.out.println("Single-thead: ");
