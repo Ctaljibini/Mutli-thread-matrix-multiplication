@@ -22,7 +22,7 @@ class multiThread {
         this.numberOfThreads = rowA;
 
         if(colA != rowB){
-            System.out.println("Matrix Multiplication is not possible due to dimension conflicts");
+            System.out.println("Matrix Multiplication is not possible due to dimension conflicts!");
             System.exit(1);
         }
     }
@@ -39,28 +39,24 @@ class multiThread {
         
         Thread[] threads = new Thread[numberOfThreads];
 
-        long startTime[] = new long[numberOfThreads];
-        long endTime[] = new long[numberOfThreads];
-        long totalTime = 0;
+        long startTime = 0;
+        long endTime = 0;
 
         for (int i = 0; i < numberOfThreads; i++) {
             final int row = i; // row'u final yapıyoruz ki her thread sabit bir row üzerinde çalışsın
             threads[i] = new Thread(() -> multiplyRow(row));
-            startTime[i] = System.nanoTime();
+            startTime = System.nanoTime();
             threads[i].start();
         }
         for (int i = 0; i < numberOfThreads; i++) {
             try {
                 threads[i].join();
-                endTime[i] = System.nanoTime();
-
-                System.out.println("Thread "+i+" time is: "+(endTime[i] - startTime[i])/1e6 +" ms." );
-                totalTime += (endTime[i] - startTime[i])/1e6;
+                endTime = System.nanoTime();
+                System.out.println("Thread "+i+" time is: "+(endTime - startTime)/1e6 +" ms." );
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }  
-        System.out.println("total time is: "+totalTime + " ms.");
+        }
         return matrixC;
     }   
 }

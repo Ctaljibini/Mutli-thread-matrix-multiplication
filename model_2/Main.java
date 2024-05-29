@@ -16,19 +16,30 @@ public class Main implements Runnable {
         this.matrixC = new int[matrixA.length][matrixB[0].length];
     }
 
+    long startTime = 0, finshTime = 0;
+
     @Override
     public void run() {
         SingleThread singleThread = new SingleThread();
         multiThread multiThread = new multiThread(matrixA, matrixB);
 
-        System.out.println("Multiplying matrices using a single thread");
+        System.out.println("*********************************SINGLE-THREAD*******************************");
+        startTime = System.nanoTime();
         matrixC = singleThread.matMatrix(matrixA, matrixB); // singla-thread'la çarpma işlemi.
+        finshTime = System.nanoTime();
+        System.out.println("Multiplay martrices using single-thread: "+ (finshTime - startTime) / 1e6+ " ms."+"\n");
+        
         try {
             writeToFile(OutputFileName[0], matrixC); // sonuç matrix output dosyadında yazdir.
         } catch (FileNotFoundException e) {}
-
-        System.out.println("Multiply matrices using a multi threads");
+        
+        System.out.println("*********************************MULTI-THREADS*******************************");
+        startTime = System.nanoTime();
         matrixC = multiThread.multiply(); // multi-thread'la çarpma işlemi.
+        finshTime = System.nanoTime();
+        System.out.println("Multiplay martrices using multi-threads: "+ (finshTime - startTime) / 1e6 + " ms."+"\n");
+        System.out.println("****************************************************************");
+        
         try {
             writeToFile(OutputFileName[1], matrixC); // sonuç matrix output dosyadında yazdir.
         } catch (FileNotFoundException e) {}
@@ -99,6 +110,8 @@ public class Main implements Runnable {
         int[][] matrixA;
         int[][] matrixB;
         int rowA, colA, rowB, colB;
+
+        System.out.println("                      WELCOME TO THR MATRIX MULTIPLIER!");
 
         if (args.length == 0) {
             rowA = 5;

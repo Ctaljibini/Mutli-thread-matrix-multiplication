@@ -11,14 +11,15 @@ public class SingleThread {
         int rowB = matrixB.length;
 
         if(colA != rowB){
+            System.out.println("****************************************************************\n");
             System.out.println("Matrix Multiplication is not possible due to dimension conflicts");
             System.exit(1);
         }
 
-        long startTime, endTime;
+        //long startTime, endTime;
 
         int[][] matrixC = new int[rowA][colB];
-        startTime = System.nanoTime();
+        //startTime = System.nanoTime();
         for(int i = 0; i < rowA; i++){
             for(int j = 0; j < colB; j++){
                 for(int k = 0; k < rowB; k++){
@@ -26,8 +27,10 @@ public class SingleThread {
                 }
             }
         }
-        endTime = System.nanoTime();
-        System.out.println("Thread for single-thread " + (endTime - startTime)/1e6 + " ms.");
+        //endTime = System.nanoTime();
+        //System.out.println("Thread for single-thread " + (endTime - startTime)/1e6 + " ms.");
+        //System.out.println("****************************************************************\n");
+
         return matrixC;
     }
 }
