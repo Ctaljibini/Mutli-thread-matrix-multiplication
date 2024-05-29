@@ -2,9 +2,37 @@ import java.io.*;
 import java.util.*;
 import java.nio.file.*; // file exists and is readable
 
-public class Main {
+public class Main implements Runnable {
 
-    public Main(){}
+    private int[][] matrixA;
+    private int[][] matrixB;
+    private int[][] matrixC;
+
+    private String[] OutputFileName = { "outputPerMatrix.txt", "outputPerRow.txt" };
+
+    public Main(int[][] matrixA, int[][] matrixB) {
+        this.matrixA = matrixA;
+        this.matrixB = matrixB;
+        this.matrixC = new int[matrixA.length][matrixB[0].length];
+    }
+
+    @Override
+    public void run() {
+        SingleThread singleThread = new SingleThread();
+        multiThread multiThread = new multiThread(matrixA, matrixB);
+
+        System.out.println("Multiplying matrices using a single thread");
+        matrixC = singleThread.matMatrix(matrixA, matrixB); // singla-thread'la çarpma işlemi.
+        try {
+            writeToFile(OutputFileName[0], matrixC); // sonuç matrix output dosyadında yazdir.
+        } catch (FileNotFoundException e) {}
+
+        System.out.println("Multiply matrices using a multi threads");
+        matrixC = multiThread.multiply(); // multi-thread'la çarpma işlemi.
+        try {
+            writeToFile(OutputFileName[1], matrixC); // sonuç matrix output dosyadında yazdir.
+        } catch (FileNotFoundException e) {}
+    }
 
     public static int[][] generateMatrix(int row, int col) {
         int[][] matrix = new int[row][col];
@@ -12,7 +40,7 @@ public class Main {
 
         for (int i = 0; i < row; i++) {
             for (int j = 0; j < col; j++) {
-                matrix[i][j] = random.nextInt(5);
+                matrix[i][j] = random.nextInt(10);
             }
         }
         return matrix;
@@ -41,7 +69,7 @@ public class Main {
             throw new IOException("File does not exist or is not readable: " + fileName);
         }
 
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))){
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(fileName))) {
 
             String line = bufferedReader.readLine();
             String[] size = line.split(" ");
@@ -58,68 +86,58 @@ public class Main {
                     matrix[i][j] = Integer.parseInt(element[j]);
                 }
             }
-
             bufferedReader.close();
         } catch (IOException e) {
-            // TODO: handle exception
             e.printStackTrace();
         }
         return matrix;
     }
 
-    public void printer(int[][] matrix) {
-        for (int i = 0; i < matrix.length; i++) {
-            for (int j = 0; j < matrix[0].length; j++) {
-                System.out.print(matrix[i][j] + " ");
+    public static void main(String[] args) throws IOException {
+
+        String[] InputFileName = { "matrixA.txt", "matrixB.txt" };
+        int[][] matrixA;
+        int[][] matrixB;
+        int rowA, colA, rowB, colB;
+
+        if (args.length == 0) {
+            rowA = 5;
+            colA = 5;
+            rowB = 5;
+            colB = 5;
+
+            matrixA = generateMatrix(rowA, colA);
+            writeToFile(InputFileName[0], matrixA);
+
+            matrixB = generateMatrix(rowB, colB);
+            writeToFile(InputFileName[1], matrixB);
+
+            Main main1 = new Main(matrixA, matrixB);
+            main1.run();
+        } else if (args.length == 2) {
+            matrixA = readFromFile(args[0]);
+            matrixB = readFromFile(args[1]);
+
+            Main main2 = new Main(matrixA, matrixB);
+            main2.run();
+        } else if (args.length == 4) {
+            try {
+                rowA = Integer.parseInt(args[0]);
+                colA = Integer.parseInt(args[1]);
+                rowB = Integer.parseInt(args[2]);
+                colB = Integer.parseInt(args[3]);
+
+                matrixA = generateMatrix(rowA, colA);
+                writeToFile(InputFileName[0], matrixA);
+
+                matrixB = generateMatrix(rowB, colB);
+                writeToFile(InputFileName[1], matrixB);
+
+                Main main3 = new Main(matrixA, matrixB);
+                main3.run();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
             }
-            System.out.println();
         }
     }
-
-    public static void main(String[] args) throws IOException {
-            String[] matrixFiles = new String[] {"matrixA.txt", "matrixB.txt"}; 
-            String[] outputFiles = new String[] {"outputPerMatrix.txt", "outputPerRow.txt"};
-            
-            int rowA, colA, rowB, colB;
-            int[][] matrixA;
-            int[][] matrixB;
-            int[][] matrixC;
-
-            SingleThread singleThread = new SingleThread();
-            if(args.length == 2){ // Matrix are read by the user
-                matrixA = readFromFile(args[0]);
-                matrixB = readFromFile(args[1]);
-                
-                System.out.println("Multiplication by Single-Thread");
-                System.out.println("*******************************");
-                matrixC = singleThread.matMatrix(matrixA, matrixB);
-                writeToFile(outputFiles[0], matrixC);
-                
-                multiThread mThread = new multiThread(matrixA, matrixB); 
-                System.out.println("Multiplication by Multi-Thread");
-                System.out.println("*******************************");
-                matrixC = mThread.multiply();
-                writeToFile(outputFiles[1], matrixC);
-            }else if(args.length == 0){
-                matrixA = generateMatrix(10, 10);
-                matrixB = generateMatrix(10, 10);
-
-                
-                System.out.println("Multiplication by Single-Thread");
-                System.out.println("*******************************");
-                matrixC = singleThread.matMatrix(matrixA, matrixB);
-                writeToFile(outputFiles[0], matrixC);
-                
-                multiThread mThread = new multiThread(matrixA, matrixB); 
-                System.out.println("Multiplication by Multi-Thread");
-                System.out.println("*******************************");
-                matrixC = mThread.multiply();
-                writeToFile(outputFiles[1], matrixC);
-
-            }
-
-
-            
-    }
-
 }

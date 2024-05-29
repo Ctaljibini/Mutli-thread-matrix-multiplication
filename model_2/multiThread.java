@@ -1,21 +1,31 @@
 
-
 class multiThread {
     private int[][] matrixA;
     private int[][] matrixB;
     private int[][] matrixC;
+    
+    private int rowA;
+    private int colA;
+    private int rowB;
+    private int colB;
+    private int numberOfThreads;
 
     public multiThread(int[][] matrixA, int[][] matrixB){
         this.matrixA = matrixA;
         this.matrixB = matrixB;
         this.matrixC = new int[matrixA.length][matrixB[0].length];
-    }
 
-    private int rowA = matrixA.length;
-    private int colA = matrixA[0].length;
-    private int rowB = matrixB.length;
-    private int colB = matrixB[0].length;
-    private int numberOfThread = rowA;
+        this.rowA = matrixA.length;
+        this.colA = matrixA[0].length;
+        this.rowB = matrixB.length;
+        this.colB = matrixB[0].length;
+        this.numberOfThreads = rowA;
+
+        if(colA != rowB){
+            System.out.println("Matrix Multiplication is not possible due to dimension conflicts");
+            System.exit(1);
+        }
+    }
 
     public void multiplyRow(int row){
         for(int j = 0; j < colB; j++){
@@ -26,25 +36,31 @@ class multiThread {
     }
 
     public int[][] multiply() {
-        Thread[] threads = new Thread[numberOfThread];
+        
+        Thread[] threads = new Thread[numberOfThreads];
 
-        for (int i = 0; i < numberOfThread; i++) {
-            final int row = i;
-            threads[i] = new Thread(() -> {
-                long startTime = System.currentTimeMillis();
-                multiplyRow(row);
-                long endTime = System.currentTimeMillis();
-                System.out.println("Thread for row " + row + " took " + (endTime - startTime) + " ms.");
-            });
+        long startTime[] = new long[numberOfThreads];
+        long endTime[] = new long[numberOfThreads];
+        long totalTime = 0;
+
+        for (int i = 0; i < numberOfThreads; i++) {
+            final int row = i; // row'u final yapıyoruz ki her thread sabit bir row üzerinde çalışsın
+            threads[i] = new Thread(() -> multiplyRow(row));
+            startTime[i] = System.nanoTime();
             threads[i].start();
         }
-        for (Thread thread : threads) {
+        for (int i = 0; i < numberOfThreads; i++) {
             try {
-                thread.join();
+                threads[i].join();
+                endTime[i] = System.nanoTime();
+
+                System.out.println("Thread "+i+" time is: "+(endTime[i] - startTime[i])/1e6 +" ms." );
+                totalTime += (endTime[i] - startTime[i])/1e6;
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        }  
+        System.out.println("total time is: "+totalTime + " ms.");
         return matrixC;
-    }    
+    }   
 }
