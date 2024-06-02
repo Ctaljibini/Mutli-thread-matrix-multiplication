@@ -51,8 +51,8 @@ Sonuç matrix **matrixC** bulunduktan sonra `Main.java` sınıfına gelmektedir.
 >### Test-2
 >![1000 X 1000 ](test/image2.png)
 >### Test-2
-> *çarpma işlemi uygun olmayan*
->![ ](test/image3.png)
+>![hata ](test/image3.png)
+>*çarpma işlemi uygun olmayan*
 
 ```
 git clone
